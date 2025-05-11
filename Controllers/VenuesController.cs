@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Venue_Booking_System.Data;
 using Venue_Booking_System.Models;
+using Venue_Booking_System.Service;
 
 namespace Venue_Booking_System.Controllers
 {
@@ -14,9 +15,12 @@ namespace Venue_Booking_System.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        public VenuesController(ApplicationDbContext context)
+        private readonly BlobService _blobService;
+
+        public VenuesController(ApplicationDbContext context, BlobService blobService)
         {
             _context = context;
+            _blobService = blobService;
         }
 
         // GET: Venues
@@ -50,12 +54,27 @@ namespace Venue_Booking_System.Controllers
         }
 
         // POST: Venues/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("VenueId,VenueName,Location,Capacity,ImageUrl")] Venue venue)
+        public async Task<IActionResult> Create([Bind("VenueId,VenueName,Location,Capacity,ImageUrl")] Venue venue, IFormFile file)
         {
+            if (file != null)
+            {
+                var fileName = file.FileName;
+                var blobExists = await _blobService.BlobExistsAsync(fileName);
+
+
+                if (blobExists)
+                {
+                    ModelState.AddModelError("ImageUrl", "Image has been uploaded previously.");
+                    return View(venue);
+                }
+                using var stream = file.OpenReadStream();
+                var blobUrl = await _blobService.uploadAsync(stream, file.FileName);
+                venue.ImageUrl = blobUrl;
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(venue);
@@ -82,11 +101,9 @@ namespace Venue_Booking_System.Controllers
         }
 
         // POST: Venues/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("VenueId,VenueName,Location,Capacity,ImageUrl")] Venue venue)
+        public async Task<IActionResult> Edit(int id, [Bind("VenueId,VenueName,Location,Capacity,ImageUrl")] Venue venue, IFormFile file)
         {
             if (id != venue.VenueId)
             {
@@ -97,8 +114,47 @@ namespace Venue_Booking_System.Controllers
             {
                 try
                 {
+                    var existingVenue = await _context.Venues.AsNoTracking().FirstOrDefaultAsync(v => v.VenueId == id);
+                    if (existingVenue == null)
+                    {
+                        return NotFound();
+                    }
+
+                    if (file != null)
+                    {
+                        string newFileName = file.FileName;
+                        string currentBlobName = Path.GetFileName(new Uri(existingVenue.ImageUrl).LocalPath);
+
+                        // Check if the new filename is already used by another blob
+                        if (newFileName != currentBlobName)
+                        {
+                            bool blobExists = await _blobService.BlobExistsAsync(newFileName);
+                            if (blobExists)
+                            {
+                                ModelState.AddModelError("ImageUrl", "An image with this name already exists.");
+                                return View(venue);
+                            }
+
+                            // Upload new image
+                            using var stream = file.OpenReadStream();
+                            string newBlobUrl = await _blobService.uploadAsync(stream, newFileName);
+
+                            // Delete old image
+                            await _blobService.DeleteBlobAsync(currentBlobName);
+
+                            venue.ImageUrl = newBlobUrl;
+                        }
+                        else
+                        {
+                            // Overwrite the existing blob
+                            using var stream = file.OpenReadStream();
+                            await _blobService.uploadAsync(stream, newFileName); // Overwrite: true by default
+                        }
+                    }
+
                     _context.Update(venue);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -111,7 +167,11 @@ namespace Venue_Booking_System.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "An error occurred while updating the venue.");
+                    return View(venue);
+                }
             }
             return View(venue);
         }
@@ -142,10 +202,17 @@ namespace Venue_Booking_System.Controllers
             var venue = await _context.Venues.FindAsync(id);
             if (venue != null)
             {
-                _context.Venues.Remove(venue);
-            }
+                // Delete the image from Azure Blob Storage
+                if (!string.IsNullOrEmpty(venue.ImageUrl))
+                {
+                    // Extract the blob name from the URL 
+                    var blobName = Path.GetFileName(new Uri(venue.ImageUrl).LocalPath);
+                    await _blobService.DeleteBlobAsync(blobName);
+                }
 
-            await _context.SaveChangesAsync();
+                _context.Venues.Remove(venue);
+                await _context.SaveChangesAsync();
+            }
             return RedirectToAction(nameof(Index));
         }
 
@@ -153,5 +220,25 @@ namespace Venue_Booking_System.Controllers
         {
             return _context.Venues.Any(e => e.VenueId == id);
         }
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 }

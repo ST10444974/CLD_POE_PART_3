@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Venue_Booking_System.Data;
+using Venue_Booking_System.Service;
 
 namespace Venue_Booking_System
 {
@@ -9,15 +11,20 @@ namespace Venue_Booking_System
         {
             var builder = WebApplication.CreateBuilder(args);
 
-
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            // Register BlobService HERE 
+            var azureConnectionString = builder.Configuration.GetConnectionString("AzureConnectionString");
+            builder.Services.AddSingleton<BlobService>(new BlobService(azureConnectionString));
+
+            // Add DbContext
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
             var app = builder.Build();
+
+
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())

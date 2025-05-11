@@ -54,7 +54,7 @@ namespace Venue_Booking_System.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("EventId,EventName,Description")] Event @event)
+        public async Task<IActionResult> Create([Bind("EventId,EventName,Description,EventStartDate,EventEndDate")] Event @event)
         {
             if (ModelState.IsValid)
             {
@@ -86,7 +86,7 @@ namespace Venue_Booking_System.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("EventId,EventName,Description")] Event @event)
+        public async Task<IActionResult> Edit(int id, [Bind("EventId,EventName,Description,EventStartDate,EventEndDate")] Event @event)
         {
             if (id != @event.EventId)
             {

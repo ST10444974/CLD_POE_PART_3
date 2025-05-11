@@ -55,11 +55,10 @@ namespace Venue_Booking_System.Controllers
         }
 
         // POST: Bookings/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("BookingId,EventId,VenueId,BookingDate")] Booking booking)
+        public async Task<IActionResult> Create([Bind("BookingId,EventId,VenueId,BookingStartDate,BookingEndDate")] Booking booking)
         {
             if (ModelState.IsValid)
             {
@@ -91,11 +90,10 @@ namespace Venue_Booking_System.Controllers
         }
 
         // POST: Bookings/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("BookingId,EventId,VenueId,BookingDate")] Booking booking)
+        public async Task<IActionResult> Edit(int id, [Bind("BookingId,EventId,VenueId,BookingStartDate,BookingEndDate")] Booking booking)
         {
             if (id != booking.BookingId)
             {

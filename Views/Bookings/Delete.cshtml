@@ -11,12 +11,19 @@
     <h4>Booking</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.BookingDate)
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.BookingStartDate)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.BookingDate)
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.BookingStartDate)
         </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.BookingEndDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.BookingEndDate)
+        </dd>
+
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Event)
         </dt>
