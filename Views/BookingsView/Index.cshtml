@@ -1,0 +1,50 @@
+﻿@model IEnumerable<BookingsDetailsView>
+
+@{
+    ViewData["Title"] = "Detailed Bookings";
+}
+
+<h1>Detailed Bookings</h1>
+
+<!-- Search Box -->
+<form asp-action="Index" method="get" class="mb-4">
+    <div class="input-group">
+        <input type="text" name="searchString" class="form-control"
+               placeholder="Search by Booking ID or Event Name" />
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+</form>
+
+<!-- Enhanced Table -->
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Booking ID</th>
+            <th>Event Name</th>
+            <th>Event Description</th>
+            <th>Venue</th>
+            <th>Location</th>
+            <th>Booking Dates</th>
+            <th>Event Dates</th>
+            <th>Capacity</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.BookingId</td>
+                <td>@item.EventName</td>
+                <td>@item.EventDescription</td>
+                <td>@item.VenueName</td>
+                <td>@item.VenueLocation</td>
+                <td>@item.BookingStartDate.ToShortDateString() - @item.BookingEndDate.ToShortDateString()</td>
+                <td>@item.EventStartDate.ToShortDateString() - @item.EventEndDate.ToShortDateString()</td>
+                <td>@item.VenueCapacity</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Back to Simple View -->
+<a asp-controller="Bookings" asp-action="Index" class="btn btn-secondary">Back to Simple View</a>

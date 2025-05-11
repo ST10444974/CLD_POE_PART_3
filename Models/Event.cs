@@ -16,10 +16,12 @@ namespace Venue_Booking_System.Models
 
         [Display(Name = "Event Start date")]
         [Required]
+        [DataType(DataType.Date)]
         public DateTime EventStartDate { get; set; }
 
         [Display(Name = "Event End Date")]
         [Required]
+        [DataType(DataType.Date)]
         public DateTime EventEndDate { get; set; }
 
 
