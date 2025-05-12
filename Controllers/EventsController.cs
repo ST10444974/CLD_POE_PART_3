@@ -25,7 +25,7 @@ namespace Venue_Booking_System.Controllers
             return View(await _context.Events.ToListAsync());
         }
 
-        // GET: Events/Details/5
+        // GET: Events/Details
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -50,8 +50,6 @@ namespace Venue_Booking_System.Controllers
         }
 
         // POST: Events/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("EventId,EventName,Description,EventStartDate,EventEndDate")] Event @event)
@@ -65,7 +63,7 @@ namespace Venue_Booking_System.Controllers
             return View(@event);
         }
 
-        // GET: Events/Edit/5
+        // GET: Events/Edit
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -81,9 +79,7 @@ namespace Venue_Booking_System.Controllers
             return View(@event);
         }
 
-        // POST: Events/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Events/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("EventId,EventName,Description,EventStartDate,EventEndDate")] Event @event)
@@ -116,7 +112,7 @@ namespace Venue_Booking_System.Controllers
             return View(@event);
         }
 
-        // GET: Events/Delete/5
+        // GET: Events/Delete
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -134,18 +130,27 @@ namespace Venue_Booking_System.Controllers
             return View(@event);
         }
 
-        // POST: Events/Delete/5
+        // POST: Events/Delete
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var @event = await _context.Events.FindAsync(id);
-            if (@event != null)
+            var eventObj = await _context.Events.FindAsync(id);
+
+            // Check for active bookings
+            bool hasBookings = await _context.Bookings.AnyAsync(b => b.EventId == id);
+            if (hasBookings)
             {
-                _context.Events.Remove(@event);
+                TempData["ErrorMessage"] = "Cannot delete event - it has active bookings!";
+                return RedirectToAction(nameof(Index));
             }
 
-            await _context.SaveChangesAsync();
+            // Proceed with deletion
+            if (eventObj != null)
+            {
+                _context.Events.Remove(eventObj);
+                await _context.SaveChangesAsync();
+            }
             return RedirectToAction(nameof(Index));
         }
 
@@ -153,5 +158,23 @@ namespace Venue_Booking_System.Controllers
         {
             return _context.Events.Any(e => e.EventId == id);
         }
+
+        // GET: /Events/GetEventDates/{id}
+        public async Task<JsonResult> GetEventDates(int id)
+        {
+            var eventObj = await _context.Events.FindAsync(id);
+            if (eventObj == null)
+            {
+                return Json(new { success = false });
+            }
+
+            return Json(new
+            {
+                success = true,
+                eventStartDate = eventObj.EventStartDate.ToString("yyyy-MM-dd"),
+                eventEndDate = eventObj.EventEndDate.ToString("yyyy-MM-dd")
+            });
+        }
+
     }
 }

@@ -26,7 +26,7 @@ namespace Venue_Booking_System.Controllers
             return View(await applicationDbContext.ToListAsync());
         }
 
-        // GET: Bookings/Details/5
+        // GET: Bookings/Details
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -55,23 +55,44 @@ namespace Venue_Booking_System.Controllers
         }
 
         // POST: Bookings/Create
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("BookingId,EventId,VenueId,BookingStartDate,BookingEndDate")] Booking booking)
         {
+            // Auto-set booking dates to match event dates
+            var selectedEvent = await _context.Events.FindAsync(booking.EventId);
+            if (selectedEvent != null)
+            {
+                booking.BookingStartDate = selectedEvent.EventStartDate.Date;
+                booking.BookingEndDate = selectedEvent.EventEndDate.Date;
+            }
+
+            // Double booking validation
+            bool hasConflict = await _context.Bookings
+                .AnyAsync(b => b.VenueId == booking.VenueId &&
+                    b.BookingId != booking.BookingId && // Exclude current booking during edits
+                    (b.BookingStartDate.Date <= booking.BookingEndDate.Date &&
+                     b.BookingEndDate.Date >= booking.BookingStartDate.Date));
+
+            if (hasConflict)
+            {
+                ModelState.AddModelError(string.Empty, "This venue is already booked for the selected dates.");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(booking);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["EventId"] = new SelectList(_context.Events, "EventId", "EventName", booking.EventId);
             ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", booking.VenueId);
             return View(booking);
         }
 
-        // GET: Bookings/Edit/5
+        // GET: Bookings/Edit
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -89,8 +110,7 @@ namespace Venue_Booking_System.Controllers
             return View(booking);
         }
 
-        // POST: Bookings/Edit/5
-        
+        // POST: Bookings/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("BookingId,EventId,VenueId,BookingStartDate,BookingEndDate")] Booking booking)
@@ -98,6 +118,26 @@ namespace Venue_Booking_System.Controllers
             if (id != booking.BookingId)
             {
                 return NotFound();
+            }
+
+            // Fetch the event to auto-set dates (if needed)
+            var selectedEvent = await _context.Events.FindAsync(booking.EventId);
+            if (selectedEvent != null)
+            {
+                booking.BookingStartDate = selectedEvent.EventStartDate.Date;
+                booking.BookingEndDate = selectedEvent.EventEndDate.Date;
+            }
+
+            // Check for overlapping bookings (exclude current booking)
+            bool hasConflict = await _context.Bookings
+                .AnyAsync(b => b.VenueId == booking.VenueId &&
+                    b.BookingId != booking.BookingId && // Exclude current booking
+                    (b.BookingStartDate.Date <= booking.BookingEndDate.Date &&
+                     b.BookingEndDate.Date >= booking.BookingStartDate.Date));
+
+            if (hasConflict)
+            {
+                ModelState.AddModelError(string.Empty, "This venue is already booked for the selected dates.");
             }
 
             if (ModelState.IsValid)
@@ -125,7 +165,7 @@ namespace Venue_Booking_System.Controllers
             return View(booking);
         }
 
-        // GET: Bookings/Delete/5
+        // GET: Bookings/Delete
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -145,7 +185,7 @@ namespace Venue_Booking_System.Controllers
             return View(booking);
         }
 
-        // POST: Bookings/Delete/5
+        // POST: Bookings/Delete
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

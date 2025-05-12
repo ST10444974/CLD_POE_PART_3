@@ -1,5 +1,4 @@
-﻿// Controllers/BookingsViewController.cs
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Venue_Booking_System.Data;
 using Venue_Booking_System.Models;

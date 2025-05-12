@@ -1,5 +1,4 @@
-﻿// Models/BookingDetailsViewModel.cs
-namespace Venue_Booking_System.Models
+﻿namespace Venue_Booking_System.Models
 {
     public class BookingsDetailsView
     {

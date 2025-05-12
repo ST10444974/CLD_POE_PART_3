@@ -17,16 +17,14 @@ namespace Venue_Booking_System.Models
         public int VenueId { get; set; }
 
         [Display(Name = "Booking Start Date")]
-        [Required]
+        [Required(ErrorMessage = "Booking start date is required.")]
         [DataType(DataType.Date)]
         public DateTime BookingStartDate { get; set; }
 
         [Display(Name = "Booking End Date")]
-        [Required]
+        [Required(ErrorMessage = "Booking end date is required.")]
         [DataType(DataType.Date)]
         public DateTime BookingEndDate { get; set; }
-
-
 
         public Event? Event { get; set; }
         public Venue? Venue { get; set; }

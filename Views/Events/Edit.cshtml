@@ -25,12 +25,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="EventStartDate" class="control-label"></label>
-                <input asp-for="EventStartDate" class="form-control" />
+                <input asp-for="EventStartDate" class="form-control" type="date" />
                 <span asp-validation-for="EventStartDate" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="EventEndDate" class="control-label"></label>
-                <input asp-for="EventEndDate" class="form-control" />
+                <input asp-for="EventEndDate" class="form-control" type="date" />
                 <span asp-validation-for="EventEndDate" class="text-danger"></span>
             </div>
 
@@ -42,7 +42,7 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index" class="btn btn-warning btn-sm">Back</a>
 </div>
 
 @section Scripts {

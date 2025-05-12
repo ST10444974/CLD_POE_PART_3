@@ -1,49 +1,82 @@
 ﻿@model Venue_Booking_System.Models.Booking
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create Booking";
 }
 
-<h1>Create</h1>
+<h1>Create New Booking</h1>
 
-<h4>Booking</h4>
-<hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label for="VenueId" class="control-label">Venue</label>
-                <select asp-for="VenueId" class="form-control" asp-items="ViewBag.VenueId"></select>
+            
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    <div asp-validation-summary="All"></div>
+                </div>
+            }
+
+           
+            <div class="form-group mb-3">
+                <label asp-for="VenueId" class="control-label"></label>
+                <select asp-for="VenueId" class="form-control" asp-items="ViewBag.VenueId">
+                    <option value="">-- Select Venue --</option>
+                </select>
             </div>
 
-            <div class="form-group">
-                <label for="EventId" class="control-label">Event</label>
-                <select asp-for="EventId" class="form-control" asp-items="ViewBag.EventId"></select>
+           
+            <div class="form-group mb-3">
+                <label asp-for="EventId" class="control-label"></label>
+                <select asp-for="EventId" class="form-control" asp-items="ViewBag.EventId">
+                    <option value="">-- Select Event --</option>
+                </select>
             </div>
 
-            <div class="form-group">
-                <label asp-for="BookingStartDate" class="control-label">Booking Start Date</label>
-                <input asp-for="BookingStartDate" class="form-control" type="date" />
+           
+            <div class="form-group mb-3">
+                <label asp-for="BookingStartDate" class="control-label"></label>
+                <input asp-for="BookingStartDate" class="form-control" type="date" readonly />
                 <span asp-validation-for="BookingStartDate" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
-                <label asp-for="BookingEndDate" class="control-label">Booking End Date</label>
-                <input asp-for="BookingEndDate" class="form-control" type="date" />
+            <div class="form-group mb-3">
+                <label asp-for="BookingEndDate" class="control-label"></label>
+                <input asp-for="BookingEndDate" class="form-control" type="date" readonly />
                 <span asp-validation-for="BookingEndDate" class="text-danger"></span>
             </div>
+
+          
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Back</a>
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            // Auto-populate dates when event changes
+            $('#EventId').change(function () {
+                const eventId = $(this).val();
+                if (eventId) {
+                    $.getJSON(`/Events/GetEventDates/${eventId}`, function(data) {
+                        if (data.success) {
+                            $('#BookingStartDate').val(data.eventStartDate);
+                            $('#BookingEndDate').val(data.eventEndDate);
+                        } else {
+                            alert("Error: Event dates not found.");
+                        }
+                    }).fail(function() {
+                        alert("Failed to fetch event dates.");
+                    });
+                }
+            });
+        });
+    </script>
 }

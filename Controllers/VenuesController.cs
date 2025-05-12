@@ -29,7 +29,7 @@ namespace Venue_Booking_System.Controllers
             return View(await _context.Venues.ToListAsync());
         }
 
-        // GET: Venues/Details/5
+        // GET: Venues/Details
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -59,23 +59,29 @@ namespace Venue_Booking_System.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("VenueId,VenueName,Location,Capacity,ImageUrl")] Venue venue, IFormFile file)
         {
-            if (file != null)
+            // Validate if a file is uploaded
+            if (file == null)
             {
+                ModelState.AddModelError("ImageUrl", "Image is required."); // Add error for ImageUrl
+            }
+            else
+            {
+                // Existing file validation and upload logic
                 var fileName = file.FileName;
                 var blobExists = await _blobService.BlobExistsAsync(fileName);
-
 
                 if (blobExists)
                 {
                     ModelState.AddModelError("ImageUrl", "Image has been uploaded previously.");
                     return View(venue);
                 }
+
                 using var stream = file.OpenReadStream();
                 var blobUrl = await _blobService.uploadAsync(stream, file.FileName);
                 venue.ImageUrl = blobUrl;
             }
 
-            if (ModelState.IsValid)
+            if (ModelState.IsValid) 
             {
                 _context.Add(venue);
                 await _context.SaveChangesAsync();
@@ -84,7 +90,7 @@ namespace Venue_Booking_System.Controllers
             return View(venue);
         }
 
-        // GET: Venues/Edit/5
+        // GET: Venues/Edit
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -100,7 +106,7 @@ namespace Venue_Booking_System.Controllers
             return View(venue);
         }
 
-        // POST: Venues/Edit/5
+        // POST: Venues/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("VenueId,VenueName,Location,Capacity,ImageUrl")] Venue venue, IFormFile file)
@@ -176,7 +182,7 @@ namespace Venue_Booking_System.Controllers
             return View(venue);
         }
 
-        // GET: Venues/Delete/5
+        // GET: Venues/Delete
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -194,7 +200,7 @@ namespace Venue_Booking_System.Controllers
             return View(venue);
         }
 
-        // POST: Venues/Delete/5
+        // POST: Venues/Delete
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
