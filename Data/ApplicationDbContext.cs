@@ -14,5 +14,16 @@ namespace Venue_Booking_System.Data
         public DbSet<Venue> Venues { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<Booking> Bookings { get; set; }
+        public DbSet<BookingsDetailsView> BookingsDetailsView { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // Configure the view as keyless
+            modelBuilder.Entity<BookingsDetailsView>(eb =>
+            {
+                eb.HasNoKey();
+                eb.ToView("BookingsDetailsView");
+            });
+        }
     }
 }

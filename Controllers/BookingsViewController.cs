@@ -19,22 +19,8 @@ namespace Venue_Booking_System.Controllers
         // GET: BookingsView
         public async Task<IActionResult> Index(string searchString)
         {
-            var query = _context.Bookings
-                .Include(b => b.Event)
-                .Include(b => b.Venue)
-                .Select(b => new BookingsDetailsView
-                {
-                    BookingId = b.BookingId,
-                    BookingStartDate = b.BookingStartDate,
-                    BookingEndDate = b.BookingEndDate,
-                    EventName = b.Event.EventName,
-                    EventDescription = b.Event.Description,
-                    EventStartDate = b.Event.EventStartDate,
-                    EventEndDate = b.Event.EventEndDate,
-                    VenueName = b.Venue.VenueName,
-                    VenueLocation = b.Venue.Location,
-                    VenueCapacity = b.Venue.Capacity
-                });
+            // Query directly from the SQL view
+            var query = _context.BookingsDetailsView.AsQueryable();
 
             if (!string.IsNullOrEmpty(searchString))
             {
@@ -44,11 +30,26 @@ namespace Venue_Booking_System.Controllers
                 }
                 else
                 {
-                    query = query.Where(b => b.EventName.ToLower().Contains(searchString.ToLower()));
+                    query = query.Where(b => b.EventName.Contains(searchString));
                 }
             }
 
-            return View(await query.ToListAsync());
+            // Project to your existing BookingsDetailsView model
+            var result = await query.Select(b => new BookingsDetailsView
+            {
+                BookingId = b.BookingId,
+                BookingStartDate = b.BookingStartDate,
+                BookingEndDate = b.BookingEndDate,
+                EventName = b.EventName,
+                EventDescription = b.EventDescription,
+                EventStartDate = b.EventStartDate,
+                EventEndDate = b.EventEndDate,
+                VenueName = b.VenueName,
+                VenueLocation = b.VenueLocation,
+                VenueCapacity = b.VenueCapacity
+            }).ToListAsync();
+
+            return View(result);
         }
     }
 }
