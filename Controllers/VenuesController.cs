@@ -206,19 +206,29 @@ namespace Venue_Booking_System.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var venue = await _context.Venues.FindAsync(id);
-            if (venue != null)
+            if (venue == null)
             {
-                // Delete the image from Azure Blob Storage
-                if (!string.IsNullOrEmpty(venue.ImageUrl))
-                {
-                    // Extract the blob name from the URL 
-                    var blobName = Path.GetFileName(new Uri(venue.ImageUrl).LocalPath);
-                    await _blobService.DeleteBlobAsync(blobName);
-                }
-
-                _context.Venues.Remove(venue);
-                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
+
+            // Check if the venue has any linked bookings
+            bool hasBookings = await _context.Bookings.AnyAsync(b => b.VenueId == id);
+            if (hasBookings)
+            {
+                TempData["ErrorMessage"] = "Cannot delete venue - it has active bookings!";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Proceed with deletion if no bookings exist
+            if (!string.IsNullOrEmpty(venue.ImageUrl))
+            {
+                var blobName = Path.GetFileName(new Uri(venue.ImageUrl).LocalPath);
+                await _blobService.DeleteBlobAsync(blobName);
+            }
+
+            _context.Venues.Remove(venue);
+            await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
