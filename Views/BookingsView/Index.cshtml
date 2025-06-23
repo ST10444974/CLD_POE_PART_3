@@ -4,105 +4,134 @@
     ViewData["Title"] = "Detailed Bookings";
 }
 
-<h1>Detailed Bookings</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Detailed Bookings</h1>
+    <a asp-controller="Bookings" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Simple View
+    </a>
+</div>
 
-<!-- Filter Form -->
-<form asp-action="Index" method="get" class="mb-4">
-    <div class="row">
-        <!-- Search -->
-        <div class="col-md-4">
-            <label>Search</label>
-            <input type="text" name="searchString" class="form-control"
-                   placeholder="Booking ID or Event Name"
-                   value="@Context.Request.Query["searchString"]" />
-        </div>
+<!-- Filter Card -->
+<div class="filter-card">
+    <h5 class="mb-3">Filter Bookings</h5>
+    <form asp-action="Index" method="get">
+        <div class="row g-3 filter-grid">
+            <!-- Search -->
+            <div class="col-md-3">
+                <label class="form-label">Search</label>
+                <input type="text" name="searchString" class="form-control form-control-sm"
+                       placeholder="Booking ID or Event Name"
+                       value="@Context.Request.Query["searchString"]" />
+            </div>
 
-        <!-- Event Type -->
-        <div class="col-md-3">
-            <label>Event Type</label>
-            <select name="eventType" class="form-control">
-                <option value="">All Types</option>
-                @foreach (var type in ViewBag.EventTypes)
-                {
-                    <option value="@type.EventTypeId"
-                            selected="@(Context.Request.Query["eventType"] == type.EventTypeId.ToString() ? "selected" : null)">
-                        @type.TypeName
-                    </option>
-                }
-            </select>
-        </div>
+            <!-- Event Type -->
+            <div class="col-md-2">
+                <label class="form-label">Event Type</label>
+                <select name="eventType" class="form-select form-select-sm">
+                    <option value="">All Types</option>
+                    @foreach (var type in ViewBag.EventTypes)
+                    {
+                        <option value="@type.EventTypeId"
+                                selected="@(Context.Request.Query["eventType"] == type.EventTypeId.ToString() ? "selected" : null)">
+                            @type.TypeName
+                        </option>
+                    }
+                </select>
+            </div>
 
-        <!-- Date Range -->
-        <div class="col-md-3">
-            <label>From Date</label>
-            <input type="date" name="startDate" class="form-control"
-                   value="@Context.Request.Query["startDate"]" />
-        </div>
-        <div class="col-md-3">
-            <label>To Date</label>
-            <input type="date" name="endDate" class="form-control"
-                   value="@Context.Request.Query["endDate"]" />
-        </div>
+            <!-- Date Range -->
+            <div class="col-md-3">
+                <label class="form-label">Date Range</label>
+                <div class="input-group input-group-sm">
+                    <input type="date" name="startDate" class="form-control form-control-sm"
+                           value="@Context.Request.Query["startDate"]" />
+                    <span class="input-group-text">to</span>
+                    <input type="date" name="endDate" class="form-control form-control-sm"
+                           value="@Context.Request.Query["endDate"]" />
+                </div>
+            </div>
 
-        <!-- Availability -->
-        <div class="col-md-3 form-check pt-4">
-            <input type="checkbox" name="availableOnly" value="true"
-                   class="form-check-input" id="availableCheck"
-                   @(Context.Request.Query["availableOnly"] == "true" ? "checked" : "") />
-            <label class="form-check-label" for="availableCheck">Available Venues Only</label>
-        </div>
+            <!-- Availability -->
+            <div class="col-md-2 d-flex align-items-end">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="availableOnly" value="true"
+                           id="availableCheck"
+                    @(Context.Request.Query["availableOnly"] == "true" ? "checked" : "") />
+                    <label class="form-check-label" for="availableCheck">Available Only</label>
+                </div>
+            </div>
 
-        <!-- Submit Button -->
-        <div class="col-md-3 pt-4">
-            <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+            <!-- Submit Button -->
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-funnel"></i> Apply
+                </button>
+            </div>
         </div>
-    </div>
-</form>
+    </form>
+</div>
 
 <!-- Results Table -->
 @if (!Model.Any())
 {
-    <div class="alert alert-warning">No bookings match your criteria.</div>
+    <div class="alert alert-warning py-2">No bookings match your criteria.</div>
 }
 else
 {
-    <table class="table table-striped table-bordered mt-3">
-        <thead class="table-dark">
-            <tr>
-                <th>Booking ID</th>
-                <th>Event Name</th>
-                <th>Event Type</th>
-                <th>Event Description</th>
-                <th>Booking Dates</th>
-                <th>Event Dates</th>
-                <th>Venue</th>
-                <th>Location</th>
-                <th>Capacity</th>
-                <th>Availability</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
+    <div class="table-responsive">
+        <table class="table table-striped table-hover table-sm">
+            <thead class="table-light">
                 <tr>
-                    <td>@item.BookingId</td>
-                    <td>@item.EventName</td>
-                    <td>@item.EventType</td>
-                    <td>@item.EventDescription</td>
-                    <td>@item.BookingStartDate.ToString("yyyy-MM-dd") - @item.BookingEndDate.ToString("yyyy-MM-dd")</td>
-                    <td>@item.EventStartDate.ToString("yyyy-MM-dd") - @item.EventEndDate.ToString("yyyy-MM-dd")</td>
-                    <td>@item.VenueName</td>
-                    <td>@item.VenueLocation</td>
-                    <td>@item.VenueCapacity</td>
-                    <td>
-                        <span class="badge @(item.VenueAvailability ? "bg-success" : "bg-danger")">
-                            @(item.VenueAvailability ? "Available" : "Unavailable")
-                        </span>
-                    </td>
+                    <th>ID</th>
+                    <th>Event</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Booking Dates</th>
+                    <th>Event Dates</th>
+                    <th>Venue</th>
+                    <th>Location</th>
+                    <th>Capacity</th>
+                    <th>Status</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.BookingId</td>
+                        <td>@item.EventName</td>
+                        <td>@item.EventType</td>
+                        <td class="text-truncate" style="max-width: 150px;" title="@item.EventDescription">
+                            @item.EventDescription
+                        </td>
+                        <td>
+                            @item.BookingStartDate.ToString("MM/dd/yyyy") -<br>
+                            @item.BookingEndDate.ToString("MM/dd/yyyy")
+                        </td>
+                        <td>
+                            @item.EventStartDate.ToString("MM/dd/yyyy") -<br>
+                            @item.EventEndDate.ToString("MM/dd/yyyy")
+                        </td>
+                        <td>@item.VenueName</td>
+                        <td>@item.VenueLocation</td>
+                        <td>@item.VenueCapacity</td>
+                        <td>
+                            <span class="badge @(item.VenueAvailability ? "bg-success" : "bg-danger")">
+                                @(item.VenueAvailability ? "Available" : "Booked")
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
-<a asp-controller="Bookings" asp-action="Index" class="btn btn-secondary mt-3">Back to Simple View</a>
+<div class="action-buttons">
+    <a asp-controller="Bookings" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Simple View
+    </a>
+    <div>
+        <span class="text-muted small">Showing @Model.Count() bookings</span>
+    </div>
+</div>
