@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Venue_Booking_System.Models
 {
@@ -26,6 +27,12 @@ namespace Venue_Booking_System.Models
         [DataType(DataType.Date)]
         [DateGreaterThan(nameof(EventStartDate), ErrorMessage = "End date must be after start date.")]
         public DateTime EventEndDate { get; set; }
+
+        [ForeignKey("EventType")]
+        [Display(Name = "Event Type")]
+        public int EventTypeId { get; set; }
+
+        public EventType? EventType { get; set; }
     }
 
     // Custom validation attribute for future dates

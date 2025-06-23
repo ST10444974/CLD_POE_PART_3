@@ -51,6 +51,54 @@ namespace Venue_Booking_System.Migrations
                     b.ToTable("Bookings");
                 });
 
+            modelBuilder.Entity("Venue_Booking_System.Models.BookingsDetailsView", b =>
+                {
+                    b.Property<DateTime>("BookingEndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("BookingStartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EventDescription")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("EventEndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EventName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("EventStartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("VenueAvailability")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("VenueCapacity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VenueLocation")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("VenueName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("BookingsDetailsView", (string)null);
+                });
+
             modelBuilder.Entity("Venue_Booking_System.Models.Event", b =>
                 {
                     b.Property<int>("EventId")
@@ -73,9 +121,31 @@ namespace Venue_Booking_System.Migrations
                     b.Property<DateTime>("EventStartDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("EventTypeId")
+                        .HasColumnType("int");
+
                     b.HasKey("EventId");
 
+                    b.HasIndex("EventTypeId");
+
                     b.ToTable("Events");
+                });
+
+            modelBuilder.Entity("Venue_Booking_System.Models.EventType", b =>
+                {
+                    b.Property<int>("EventTypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EventTypeId"));
+
+                    b.Property<string>("TypeName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("EventTypeId");
+
+                    b.ToTable("EventTypes");
                 });
 
             modelBuilder.Entity("Venue_Booking_System.Models.Venue", b =>
@@ -89,8 +159,14 @@ namespace Venue_Booking_System.Migrations
                     b.Property<int>("Capacity")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EventTypeId")
+                        .HasColumnType("int");
+
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Location")
                         .IsRequired()
@@ -101,6 +177,8 @@ namespace Venue_Booking_System.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("VenueId");
+
+                    b.HasIndex("EventTypeId");
 
                     b.ToTable("Venues");
                 });
@@ -122,6 +200,26 @@ namespace Venue_Booking_System.Migrations
                     b.Navigation("Event");
 
                     b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("Venue_Booking_System.Models.Event", b =>
+                {
+                    b.HasOne("Venue_Booking_System.Models.EventType", "EventType")
+                        .WithMany()
+                        .HasForeignKey("EventTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EventType");
+                });
+
+            modelBuilder.Entity("Venue_Booking_System.Models.Venue", b =>
+                {
+                    b.HasOne("Venue_Booking_System.Models.EventType", "EventType")
+                        .WithMany()
+                        .HasForeignKey("EventTypeId");
+
+                    b.Navigation("EventType");
                 });
 #pragma warning restore 612, 618
         }

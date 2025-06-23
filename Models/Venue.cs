@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Venue_Booking_System.Models
 {
@@ -19,5 +20,11 @@ namespace Venue_Booking_System.Models
 
         
         public string? ImageUrl { get; set; }
+
+        [Display(Name = "Available?")]
+        public bool IsAvailable { get; set; } = true; // Default to available
+
+        public EventType? EventType { get; set; }
+
     }
 }

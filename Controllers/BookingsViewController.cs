@@ -16,40 +16,76 @@ namespace Venue_Booking_System.Controllers
             _context = context;
         }
 
-        // GET: BookingsView
-        public async Task<IActionResult> Index(string searchString)
+        public async Task<IActionResult> Index(
+            string searchString,
+            int? eventType,
+            DateTime? startDate,
+            DateTime? endDate,
+            bool availableOnly = false)
         {
-            // Query directly from the SQL view
-            var query = _context.BookingsDetailsView.AsQueryable();
+            // Start with joined query
+            var baseQuery = from booking in _context.Bookings
+                            join venue in _context.Venues on booking.VenueId equals venue.VenueId
+                            join evt in _context.Events on booking.EventId equals evt.EventId
+                            join eventTypeObj in _context.EventTypes on evt.EventTypeId equals eventTypeObj.EventTypeId
+                            select new
+                            {
+                                Booking = booking,
+                                Venue = venue,
+                                Event = evt,
+                                EventType = eventTypeObj
+                            };
 
+            // Apply filters
             if (!string.IsNullOrEmpty(searchString))
             {
-                if (int.TryParse(searchString, out int bookingId))
-                {
-                    query = query.Where(b => b.BookingId == bookingId);
-                }
-                else
-                {
-                    query = query.Where(b => b.EventName.Contains(searchString));
-                }
+                baseQuery = baseQuery.Where(x =>
+                    x.Booking.BookingId.ToString().Contains(searchString) ||
+                    x.Event.EventName.Contains(searchString));
             }
 
-            // Project to your existing BookingsDetailsView model
-            var result = await query.Select(b => new BookingsDetailsView
+            if (eventType.HasValue)
             {
-                BookingId = b.BookingId,
-                BookingStartDate = b.BookingStartDate,
-                BookingEndDate = b.BookingEndDate,
-                EventName = b.EventName,
-                EventDescription = b.EventDescription,
-                EventStartDate = b.EventStartDate,
-                EventEndDate = b.EventEndDate,
-                VenueName = b.VenueName,
-                VenueLocation = b.VenueLocation,
-                VenueCapacity = b.VenueCapacity
+                baseQuery = baseQuery.Where(x => x.Event.EventTypeId == eventType.Value);
+            }
+
+            if (startDate.HasValue)
+            {
+                baseQuery = baseQuery.Where(x => x.Booking.BookingStartDate >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                baseQuery = baseQuery.Where(x => x.Booking.BookingEndDate <= endDate.Value);
+            }
+
+            if (availableOnly)
+            {
+                baseQuery = baseQuery.Where(x => x.Venue.IsAvailable);
+            }
+
+            // Project to view model
+            var results = await baseQuery.Select(x => new BookingsDetailsView
+            {
+                BookingId = x.Booking.BookingId,
+                BookingStartDate = x.Booking.BookingStartDate,
+                BookingEndDate = x.Booking.BookingEndDate,
+                EventName = x.Event.EventName,
+                EventDescription = x.Event.Description,
+                EventStartDate = x.Event.EventStartDate,
+                EventEndDate = x.Event.EventEndDate,
+                VenueName = x.Venue.VenueName,
+                VenueLocation = x.Venue.Location,
+                VenueCapacity = x.Venue.Capacity,
+                EventType = x.EventType.TypeName,
+                VenueAvailability = x.Venue.IsAvailable
             }).ToListAsync();
 
-            return View(result);
+            // Populate EventType dropdown
+            ViewBag.EventTypes = await _context.EventTypes.ToListAsync();
+
+            return View(results);
         }
     }
+
 }

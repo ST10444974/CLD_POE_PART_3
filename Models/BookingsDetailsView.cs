@@ -12,5 +12,7 @@
         public string VenueName { get; set; }
         public string VenueLocation { get; set; }
         public int VenueCapacity { get; set; }
+        public string EventType { get; set; }
+        public bool VenueAvailability { get; set; }
     }
 }

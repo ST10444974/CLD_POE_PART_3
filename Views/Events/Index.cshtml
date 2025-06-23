@@ -23,6 +23,7 @@
         <tr>
             <th>@Html.DisplayNameFor(model => model.EventName)</th>
             <th>@Html.DisplayNameFor(model => model.Description)</th>
+            <th>@Html.DisplayNameFor(model => model.EventType)</th>
             <th>@Html.DisplayNameFor(model => model.EventStartDate)</th>
             <th>@Html.DisplayNameFor(model => model.EventEndDate)</th>
             <th>Actions</th>
@@ -34,6 +35,7 @@
             <tr>
                 <td>@Html.DisplayFor(modelItem => item.EventName)</td>
                 <td>@Html.DisplayFor(modelItem => item.Description)</td>
+                <td>@item.EventType?.TypeName</td>
                 <td>@item.EventStartDate.ToString("dd-MMM-yyyy")</td>
                 <td>@item.EventEndDate.ToString("dd-MMM-yyyy")</td>
                 <td>

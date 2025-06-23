@@ -22,7 +22,11 @@ namespace Venue_Booking_System.Controllers
         // GET: Events
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Events.ToListAsync());
+            var eventsWithTypes = await _context.Events
+         .Include(e => e.EventType)
+         .ToListAsync();
+
+            return View(eventsWithTypes);
         }
 
         // GET: Events/Details
@@ -34,6 +38,7 @@ namespace Venue_Booking_System.Controllers
             }
 
             var @event = await _context.Events
+                .Include(e => e.EventType)
                 .FirstOrDefaultAsync(m => m.EventId == id);
             if (@event == null)
             {
@@ -46,13 +51,14 @@ namespace Venue_Booking_System.Controllers
         // GET: Events/Create
         public IActionResult Create()
         {
+            ViewData["EventTypeId"] = new SelectList(_context.EventTypes, "EventTypeId", "TypeName");
             return View();
         }
 
         // POST: Events/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("EventId,EventName,Description,EventStartDate,EventEndDate")] Event @event)
+        public async Task<IActionResult> Create([Bind("EventId,EventName,Description,EventStartDate,EventEndDate,EventTypeId")] Event @event)
         {
             if (ModelState.IsValid)
             {
@@ -60,6 +66,8 @@ namespace Venue_Booking_System.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
+            ViewData["EventTypeId"] = new SelectList(_context.EventTypes, "EventTypeId", "TypeName", @event.EventTypeId);
             return View(@event);
         }
 
@@ -76,13 +84,15 @@ namespace Venue_Booking_System.Controllers
             {
                 return NotFound();
             }
+
+            ViewData["EventTypeId"] = new SelectList(_context.EventTypes, "EventTypeId", "TypeName", @event.EventTypeId);
             return View(@event);
         }
 
         // POST: Events/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("EventId,EventName,Description,EventStartDate,EventEndDate")] Event @event)
+        public async Task<IActionResult> Edit(int id, [Bind("EventId,EventName,Description,EventStartDate,EventEndDate,EventTypeId")] Event @event)
         {
             if (id != @event.EventId)
             {
@@ -109,6 +119,8 @@ namespace Venue_Booking_System.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
+            ViewData["EventTypeId"] = new SelectList(_context.EventTypes, "EventTypeId", "TypeName", @event.EventTypeId);
             return View(@event);
         }
 
@@ -121,7 +133,9 @@ namespace Venue_Booking_System.Controllers
             }
 
             var @event = await _context.Events
+                .Include(e => e.EventType) // ← Include the EventType
                 .FirstOrDefaultAsync(m => m.EventId == id);
+
             if (@event == null)
             {
                 return NotFound();
@@ -129,6 +143,7 @@ namespace Venue_Booking_System.Controllers
 
             return View(@event);
         }
+
 
         // POST: Events/Delete
         [HttpPost, ActionName("Delete")]
@@ -175,6 +190,7 @@ namespace Venue_Booking_System.Controllers
                 eventEndDate = eventObj.EventEndDate.ToString("yyyy-MM-dd")
             });
         }
+
 
     }
 }

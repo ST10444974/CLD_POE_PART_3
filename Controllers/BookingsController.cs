@@ -22,7 +22,11 @@ namespace Venue_Booking_System.Controllers
         // GET: Bookings
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Bookings.Include(b => b.Venue).Include(b => b.Event);
+            var applicationDbContext = _context.Bookings
+                .Include(b => b.Venue)
+                .Include(b => b.Event)
+                    .ThenInclude(e => e.EventType); // 👈 This line is required
+
             return View(await applicationDbContext.ToListAsync());
         }
 

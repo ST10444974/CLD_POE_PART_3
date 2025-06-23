@@ -39,7 +39,7 @@
                     @Html.DisplayFor(modelItem => item.Venue.VenueName)
             </td>
             <td>
-                    @Html.DisplayFor(modelItem => item.Event.EventName)
+                    @item.Event?.EventType?.TypeName
             </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.BookingStartDate)
